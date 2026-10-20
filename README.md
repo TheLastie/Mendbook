@@ -1,5 +1,7 @@
 # Mendbook
 
+## English
+
 **A personal repair and ownership journal for the things you want to keep.** Track purchase details, warranty dates, serial numbers, maintenance costs and follow-up reminders in one place. Everything stays in your browser; export a JSON backup whenever you like.
 
 ![Mendbook desktop interface](screenshots/mendbook.png)
@@ -23,7 +25,7 @@ The sample cards are local demo data and can be deleted. The app has no accounts
 
 ---
 
-# Mendbook
+## Русский
 
 **Личный журнал вещей и ремонта для того, что хочется сохранить.** Записывайте покупки, сроки гарантии, серийные номера, стоимость обслуживания и напоминания о следующей проверке. Данные остаются в браузере; в любой момент можно скачать резервную копию в JSON.
 
