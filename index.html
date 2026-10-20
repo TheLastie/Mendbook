@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eee8dc">
+  <meta name="description" content="Mendbook — личный журнал вещей и ремонта. Храните гарантии, серийные номера, расходы и историю обслуживания офлайн.">
+  <link rel="canonical" href="https://thelastie.github.io/mendbook/">
+  <meta name="geo.region" content="RU-BA">
+  <meta name="geo.placename" content="Уфа">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Mendbook — паспорт вещей и ремонта">
+  <meta property="og:description" content="Гарантии, обслуживание и расходы на вещи — в одном личном журнале, который остаётся на вашем устройстве.">
+  <meta property="og:url" content="https://thelastie.github.io/mendbook/">
+  <meta property="og:image" content="https://thelastie.github.io/mendbook/screenshots/mendbook.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>Mendbook — паспорт вещей и ремонта</title>
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Mendbook — паспорт вещей и ремонта","applicationCategory":"LifestyleApplication","operatingSystem":"Any","inLanguage":"ru","description":"Локальный журнал вещей, гарантии, обслуживания, ремонта и расходов с резервным копированием.","areaServed":"Worldwide","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232a453d'/%3E%3Cpath d='M13 34V14h5l6 8 6-8h5v20h-6V24l-5 7-5-7v10z' fill='%23f1eadd'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="paper-grain" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Mendbook, главная">
+      <span class="brand-mark" aria-hidden="true">M</span><span>mendbook</span>
+    </a>
+    <div class="topbar-note"><span class="tiny-dot"></span> ЛИЧНЫЙ ЖУРНАЛ ВЕЩЕЙ</div>
+    <div class="topbar-actions">
+      <button class="quiet-button" id="exportButton" type="button" title="Скачать резервную копию">Резервная копия <span aria-hidden="true">↗</span></button>
+      <label class="icon-button import-label" title="Восстановить резервную копию" aria-label="Восстановить резервную копию">
+        <input id="importFile" type="file" accept="application/json,.json">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5M4 14v5h16v-5"/></svg>
+      </label>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="intro" aria-labelledby="pageTitle">
+      <div class="eyebrow"><span>01</span> ДОМАШНЯЯ МАСТЕРСКАЯ</div>
+      <div class="intro-row">
+        <div>
+          <h1 id="pageTitle">Пусть вещи<br><em>служат дольше.</em></h1>
+          <p>Записывайте, что купили, что починили и когда пора проверить снова.</p>
+        </div>
+        <div class="intro-stamp" aria-label="Данные хранятся на этом устройстве">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 55 18v28L32 59 9 46V18L32 5Z"/><path d="m21 32 7 7 15-16"/></svg>
+          <span>ВАШИ ДАННЫЕ<br>ОСТАЮТСЯ У ВАС</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="workbench" aria-label="Журнал вещей">
+      <aside class="inventory" aria-label="Список вещей">
+        <div class="inventory-head">
+          <div>
+            <div class="section-kicker">КАРТОТЕКА <span id="itemCount">00</span></div>
+            <h2>Мои вещи</h2>
+          </div>
+          <button class="add-button" id="addItemButton" type="button" aria-label="Добавить вещь">+</button>
+        </div>
+        <label class="search-box">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+          <input id="searchInput" type="search" placeholder="Найти по названию или номеру" autocomplete="off">
+        </label>
+        <div class="filter-row" role="group" aria-label="Фильтр вещей">
+          <button class="filter-chip is-active" type="button" data-filter="all">Все</button>
+          <button class="filter-chip" type="button" data-filter="warranty">Гарантия</button>
+          <button class="filter-chip" type="button" data-filter="service">Проверить</button>
+        </div>
+        <div class="item-list" id="itemList" aria-live="polite"></div>
+        <div class="inventory-foot"><span class="offline-indicator"><i></i>РАБОТАЕТ ОФЛАЙН</span><span id="storageLabel">На этом устройстве</span></div>
+      </aside>
+
+      <section class="record" id="record" aria-live="polite">
+        <div class="record-loading">Открываем карточку…</div>
+      </section>
+    </section>
+    <footer class="page-footer"><span>Хороший ремонт начинается с того, что ничего не забыто.</span><span>M / ПОЛЕВОЙ ЖУРНАЛ № 01</span></footer>
+  </main>
+
+  <dialog id="itemDialog" class="dialog">
+    <form id="itemForm" method="dialog">
+      <div class="dialog-head"><div><div class="section-kicker" id="itemDialogKicker">НОВАЯ ЗАПИСЬ</div><h2 id="itemDialogTitle">Добавить вещь</h2></div><button class="close-button" type="button" data-close="itemDialog" aria-label="Закрыть">×</button></div>
+      <label class="field">Название<input name="name" required maxlength="70" placeholder="Например, велосипед" autofocus></label>
+      <div class="field-pair">
+        <label class="field">Категория<select name="category"><option value="home">Дом</option><option value="electronics">Электроника</option><option value="transport">Транспорт</option><option value="tools">Инструменты</option><option value="other">Другое</option></select></label>
+        <label class="field">Дата покупки<input name="purchased" type="date"></label>
+      </div>
+      <div class="field-pair">
+        <label class="field">Стоимость, ₽<input name="price" type="number" min="0" step="1" placeholder="0"></label>
+        <label class="field">Гарантия, месяцев<input name="warrantyMonths" type="number" min="0" max="120" step="1" placeholder="Нет гарантии"></label>
+      </div>
+      <label class="field">Серийный номер или модель<input name="serial" maxlength="100" placeholder="Можно оставить пустым"></label>
+      <label class="field">Где хранится чек / заметка<textarea name="note" rows="2" maxlength="240" placeholder="Например, бумажный чек в синей папке"></textarea></label>
+      <div class="dialog-actions"><button class="text-button" type="button" data-close="itemDialog">Отмена</button><button class="primary-button" id="saveItemButton" type="submit">Создать карточку <span>↗</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog id="serviceDialog" class="dialog">
+    <form id="serviceForm" method="dialog">
+      <div class="dialog-head"><div><div class="section-kicker">ИСТОРИЯ ОБСЛУЖИВАНИЯ</div><h2>Что сделали?</h2></div><button class="close-button" type="button" data-close="serviceDialog" aria-label="Закрыть">×</button></div>
+      <label class="field">Работа или проблема<input name="title" required maxlength="90" placeholder="Например, заменил тормозные колодки"></label>
+      <div class="field-pair">
+        <label class="field">Дата<input name="date" type="date" required></label>
+        <label class="field">Расход, ₽<input name="cost" type="number" min="0" step="1" placeholder="0"></label>
+      </div>
+      <label class="field">Детали<textarea name="details" rows="3" maxlength="500" placeholder="Запчасть, мастерская, что стоит проверить в следующий раз"></textarea></label>
+      <label class="field reminder-field"><span><input name="reminder" type="checkbox"> Напомнить о следующей проверке</span><input name="reminderDate" type="date" disabled></label>
+      <div class="dialog-actions"><button class="text-button" type="button" data-close="serviceDialog">Отмена</button><button class="primary-button" type="submit">Сохранить в журнал</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="decisionDialog" class="dialog decision-dialog">
+    <form id="decisionForm" method="dialog">
+      <div class="dialog-head"><div><div class="section-kicker">СЛЕДУЮЩИЙ СРОК СЛУЖБЫ</div><h2>Ремонтировать или менять?</h2></div><button class="close-button" type="button" data-close="decisionDialog" aria-label="Закрыть">×</button></div>
+      <p class="dialog-intro">Сравните стоимость одного месяца пользования. В расчёт идут только будущие расходы: цена уже купленной вещи не учитывается.</p>
+      <div class="field-pair">
+        <label class="field">Оценка ремонта, ₽<input name="repairCost" type="number" min="0" step="1" required placeholder="Предложение мастерской"></label>
+        <label class="field">Остаточный срок после ремонта, мес.<input name="repairMonths" type="number" min="1" max="240" step="1" value="18" required></label>
+      </div>
+      <div class="field-pair">
+        <label class="field">Стоимость замены, ₽<input name="replacementCost" type="number" min="1" step="1" required></label>
+        <label class="field">Срок службы новой вещи, мес.<input name="replacementMonths" type="number" min="1" max="360" step="1" value="48" required></label>
+      </div>
+      <div class="decision-result" id="decisionResult" aria-live="polite" hidden></div>
+      <div class="dialog-actions"><button class="text-button" type="button" data-close="decisionDialog">Закрыть</button><button class="primary-button" type="submit">Сравнить варианты <span>↗</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog" class="dialog confirm-dialog">
+    <form id="confirmForm" method="dialog"><div class="section-kicker">УБРАТЬ ИЗ КАРТОТЕКИ</div><h2>Удалить карточку?</h2><p>Журнал ремонта и заметки этой вещи тоже будут удалены.</p><div class="dialog-actions"><button class="text-button" type="button" data-close="confirmDialog">Оставить</button><button class="danger-button" type="submit">Удалить карточку</button></div></form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
