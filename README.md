@@ -17,7 +17,7 @@ Open `index.html` in a modern browser, or serve this folder from a static web se
 - Calculates warranty end dates from the purchase date and term.
 - Records repairs, parts, costs and what to inspect next.
 - Highlights upcoming service reminders and active warranties.
-- Compares a repair quote with replacement cost per month of useful life, shows assumptions, and saves the decision to that item's history.
+- Compares upfront repair and replacement costs with monthly ownership estimates, calculates the repair's break-even lifespan, and saves the assumptions to that item's history.
 - Prints an item card for a workshop drawer or paper folder.
 - Exports and restores a portable JSON backup.
 
@@ -42,7 +42,7 @@ The sample cards are local demo data and can be deleted. The app has no accounts
 - Расчёт даты окончания гарантии.
 - История ремонта, деталей, затрат и следующих проверок.
 - Подсветка активных гарантий и скорых напоминаний.
-- Сравнение ремонта и замены по стоимости месяца службы с показом допущений и сохранением решения в историю вещи.
+- Сравнивает разовые затраты и стоимость месяца службы, рассчитывает порог окупаемости ремонта и сохраняет допущения в историю вещи.
 - Печать карточки для ящика мастерской или бумажной папки.
 - Переносимая резервная копия JSON.
 

@@ -294,25 +294,24 @@
     if (!(repairCost >= 0 && repairMonths > 0 && replacementCost > 0 && replacementMonths > 0)) return;
     const repairMonthly = repairCost / repairMonths;
     const replacementMonthly = replacementCost / replacementMonths;
-    const repairRatio = replacementCost ? repairCost / replacementCost : 0;
-    const repairWins = repairCost < replacementCost && repairMonthly <= replacementMonthly;
+    const breakEvenRepairMonths = Math.ceil(repairCost / replacementMonthly);
+    const sameMonthlyCost = Math.abs(repairMonthly - replacementMonthly) < 1;
+    const repairWins = repairMonthly < replacementMonthly && !sameMonthlyCost;
+    const recommendation = sameMonthlyCost ? 'равная стоимость месяца' : repairWins ? 'ремонт' : 'замена';
     const cheaperMonthly = Math.min(repairMonthly, replacementMonthly);
     const scale = Math.max(repairMonthly, replacementMonthly, 1);
     const result = $('#decisionResult');
-    result.classList.toggle('is-replace', !repairWins);
+    result.classList.toggle('is-replace', !repairWins && !sameMonthlyCost);
     result.innerHTML = `<div class="section-kicker">СРАВНЕНИЕ НА ВАШИХ ОЦЕНКАХ</div>
-      <h3>${repairWins ? 'Ремонт выглядит разумнее' : 'Замена обойдётся выгоднее'}</h3>
-      <p>${repairWins
-        ? `Ремонт составляет ${Math.round(repairRatio * 100)}% цены замены и даёт меньшую стоимость месяца пользования.`
-        : `По вашим срокам ремонт стоит ${escapeHtml(money.format(repairMonthly))} в месяц, замена — ${escapeHtml(money.format(replacementMonthly))}.`}
-        Это ориентир: сравнение не учитывает простои, удобство, гарантию и стоимость утилизации.</p>
+      <h3>${sameMonthlyCost ? 'Стоимость месяца почти одинакова' : repairWins ? 'Ремонт дешевле за месяц' : 'Замена дешевле за месяц'}</h3>
+      <p>Сейчас: ремонт — ${escapeHtml(money.format(repairCost))}, замена — ${escapeHtml(money.format(replacementCost))}. По вашим срокам месяц пользования стоит ${escapeHtml(money.format(repairMonthly))} при ремонте и ${escapeHtml(money.format(replacementMonthly))} при замене. Чтобы ремонт сравнялся с заменой по стоимости месяца, он должен прослужить около ${breakEvenRepairMonths} мес.; оценка ремонта — ${repairMonths} мес. Это ориентир: он не учитывает простой, удобство, гарантию и утилизацию.</p>
       <div class="decision-compare">
         <div class="decision-option"><span>ПОЧИНИТЬ</span><span class="decision-track"><i class="decision-fill" style="width:${Math.max(2, repairMonthly / scale * 100)}%"></i></span><span class="decision-cost">${escapeHtml(money.format(repairMonthly))} / мес.</span></div>
         <div class="decision-option is-replace"><span>ЗАМЕНИТЬ</span><span class="decision-track"><i class="decision-fill" style="width:${Math.max(2, replacementMonthly / scale * 100)}%"></i></span><span class="decision-cost">${escapeHtml(money.format(replacementMonthly))} / мес.</span></div>
       </div>
-      <p class="decision-assumption">${repairWins ? `Расчёт ремонта: ${escapeHtml(money.format(repairCost))} ÷ ${repairMonths} мес.` : `Расчёт замены: ${escapeHtml(money.format(replacementCost))} ÷ ${replacementMonths} мес.`}</p>
+      <p class="decision-assumption">Расчёт основан на сроках, которые вы указали: ремонт ${repairMonths} мес. · замена ${replacementMonths} мес.</p>
       <button class="primary-button decision-save" id="saveDecisionButton" type="button">Сохранить расчёт в историю вещи <span>↗</span></button>`;
-    latestDecision = { repairCost, repairMonths, replacementCost, replacementMonths, repairMonthly, replacementMonthly, recommendation: repairWins ? 'ремонт' : 'замена' };
+    latestDecision = { repairCost, repairMonths, replacementCost, replacementMonths, repairMonthly, replacementMonthly, breakEvenRepairMonths, recommendation };
     result.hidden = false;
     $('#saveDecisionButton').addEventListener('click', () => {
       const item = state.items.find((entry) => entry.id === decisionItemId);
@@ -321,7 +320,7 @@
       item.events.push({
         id: uid(), kind: 'decision', title: `Сравнение: ${latestDecision.recommendation}`,
         date: isoToday(), cost: 0, reminderDate: null,
-        details: `Ориентир по стоимости месяца: ремонт ${money.format(latestDecision.repairMonthly)} (${money.format(latestDecision.repairCost)} / ${latestDecision.repairMonths} мес.); замена ${money.format(latestDecision.replacementMonthly)} (${money.format(latestDecision.replacementCost)} / ${latestDecision.replacementMonths} мес.). Вердикт — ${latestDecision.recommendation}. Не учитывает простой, удобство, гарантию и утилизацию.`
+        details: `Ориентир по стоимости месяца: ремонт ${money.format(latestDecision.repairMonthly)} (${money.format(latestDecision.repairCost)} / ${latestDecision.repairMonths} мес.); замена ${money.format(latestDecision.replacementMonthly)} (${money.format(latestDecision.replacementCost)} / ${latestDecision.replacementMonths} мес.). Ремонт сравняется с заменой при сроке около ${latestDecision.breakEvenRepairMonths} мес. Итог: ${latestDecision.recommendation}. Не учитывает простой, удобство, гарантию и утилизацию.`
       });
       persist(); render(); $('#decisionDialog').close(); showToast('Расчёт сохранён в истории вещи.');
     });
