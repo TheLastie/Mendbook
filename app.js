@@ -59,6 +59,8 @@
   }
 
   const state = { items: loadData(), selectedId: null, filter: 'all', search: '', deleteId: null, editId: null, toastTimer: 0 };
+  let latestDecision = null;
+  let decisionItemId = null;
   state.selectedId = state.items[0]?.id || null;
   const itemList = $('#itemList');
   const record = $('#record');
@@ -145,8 +147,8 @@
     const statusText = warr.active ? `Гарантия действует ещё ${warr.remaining} ${plural(warr.remaining, 'день', 'дня', 'дней')} — до ${dateText(warr.end)}` : warr.end ? `Гарантия закончилась ${dateText(warr.end)}` : 'Гарантия не записана';
     const purchaseAge = item.purchased ? `${Math.floor((Date.now() - dateValue(item.purchased).getTime()) / 86400000 / 30.44)} мес. в пользовании` : 'Дата покупки не указана';
     const statusClass = due || (warr.end && !warr.active) ? 'is-alert' : '';
-    const entries = events.length ? events.map((event) => `<article class="timeline-entry">
-        <div class="entry-date">${escapeHtml(dateText(event.date))}</div><h4 class="entry-title">${escapeHtml(event.title)}</h4>
+    const entries = events.length ? events.map((event) => `<article class="timeline-entry ${event.kind === 'decision' ? 'is-decision' : ''}">
+        <div class="entry-date">${event.kind === 'decision' ? 'РЕШЕНИЕ · ' : ''}${escapeHtml(dateText(event.date))}</div><h4 class="entry-title">${escapeHtml(event.title)}</h4>
         ${event.details ? `<div class="entry-detail">${escapeHtml(event.details)}</div>` : ''}
         ${Number(event.cost) > 0 ? `<span class="entry-cost">РАСХОД ${escapeHtml(formatMoney(event.cost))}</span>` : ''}
         ${event.reminderDate ? `<div class="entry-reminder">Проверить снова · ${escapeHtml(dateText(event.reminderDate))}</div>` : ''}
@@ -171,7 +173,7 @@
     $('#printButton', record).addEventListener('click', () => window.print());
     $('#deleteButton', record).addEventListener('click', () => { state.deleteId = item.id; $('#confirmDialog').showModal(); });
     $('#addServiceButton', record).addEventListener('click', openServiceDialog);
-    $('#decisionButton', record).addEventListener('click', openDecisionDialog);
+    $('#decisionButton', record).addEventListener('click', () => openDecisionDialog(item.id));
   }
 
   function render() {
@@ -224,9 +226,11 @@
     $('#saveItemButton').innerHTML = 'Создать карточку <span>↗</span>';
   }
 
-  function openDecisionDialog() {
+  function openDecisionDialog(itemId) {
     const form = $('#decisionForm');
     form.reset();
+    decisionItemId = itemId;
+    latestDecision = null;
     $('#decisionResult').hidden = true;
     $('#decisionResult').classList.remove('is-replace');
     $('#decisionDialog').showModal();
@@ -306,8 +310,21 @@
         <div class="decision-option"><span>ПОЧИНИТЬ</span><span class="decision-track"><i class="decision-fill" style="width:${Math.max(2, repairMonthly / scale * 100)}%"></i></span><span class="decision-cost">${escapeHtml(money.format(repairMonthly))} / мес.</span></div>
         <div class="decision-option is-replace"><span>ЗАМЕНИТЬ</span><span class="decision-track"><i class="decision-fill" style="width:${Math.max(2, replacementMonthly / scale * 100)}%"></i></span><span class="decision-cost">${escapeHtml(money.format(replacementMonthly))} / мес.</span></div>
       </div>
-      <p class="decision-assumption">${repairWins ? `Расчёт ремонта: ${escapeHtml(money.format(repairCost))} ÷ ${repairMonths} мес.` : `Расчёт замены: ${escapeHtml(money.format(replacementCost))} ÷ ${replacementMonths} мес.`}</p>`;
+      <p class="decision-assumption">${repairWins ? `Расчёт ремонта: ${escapeHtml(money.format(repairCost))} ÷ ${repairMonths} мес.` : `Расчёт замены: ${escapeHtml(money.format(replacementCost))} ÷ ${replacementMonths} мес.`}</p>
+      <button class="primary-button decision-save" id="saveDecisionButton" type="button">Сохранить расчёт в историю вещи <span>↗</span></button>`;
+    latestDecision = { repairCost, repairMonths, replacementCost, replacementMonths, repairMonthly, replacementMonthly, recommendation: repairWins ? 'ремонт' : 'замена' };
     result.hidden = false;
+    $('#saveDecisionButton').addEventListener('click', () => {
+      const item = state.items.find((entry) => entry.id === decisionItemId);
+      if (!item || !latestDecision) return;
+      item.events ||= [];
+      item.events.push({
+        id: uid(), kind: 'decision', title: `Сравнение: ${latestDecision.recommendation}`,
+        date: isoToday(), cost: 0, reminderDate: null,
+        details: `Ориентир по стоимости месяца: ремонт ${money.format(latestDecision.repairMonthly)} (${money.format(latestDecision.repairCost)} / ${latestDecision.repairMonths} мес.); замена ${money.format(latestDecision.replacementMonthly)} (${money.format(latestDecision.replacementCost)} / ${latestDecision.replacementMonths} мес.). Вердикт — ${latestDecision.recommendation}. Не учитывает простой, удобство, гарантию и утилизацию.`
+      });
+      persist(); render(); $('#decisionDialog').close(); showToast('Расчёт сохранён в истории вещи.');
+    });
   });
 
   $('#confirmForm').addEventListener('submit', (event) => {

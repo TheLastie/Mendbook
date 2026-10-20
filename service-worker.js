@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mendbook-shell-v2';
+const CACHE_NAME = 'mendbook-shell-v3';
 const SHELL = ['./', './styles.css', './app.js'];
 
 self.addEventListener('install', (event) => {
