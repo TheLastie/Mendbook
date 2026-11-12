@@ -206,6 +206,7 @@
   function openItemDialog(item = null) {
     const form = $('#itemForm');
     form.reset();
+    form.elements.purchased.max = isoToday();
     state.editId = item?.id || null;
     $('#itemDialogKicker').textContent = item ? 'ПРАВКА ЗАПИСИ' : 'НОВАЯ ЗАПИСЬ';
     $('#itemDialogTitle').textContent = item ? 'Изменить вещь' : 'Добавить вещь';
