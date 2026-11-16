@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://thelastie.github.io/Mendbook/sitemap.xml
+Sitemap: https://lastie-folio.ru/Mendbook/sitemap.xml
